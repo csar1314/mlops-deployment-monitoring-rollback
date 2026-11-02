@@ -26,7 +26,7 @@ class DomainError(Exception):
 class Engine:
     def __init__(self, settings, clock=time.time):
         self.settings, self.clock = settings, clock
-        settings.ensure_token()
+        settings.data_dir.mkdir(parents=True, exist_ok=True)
         self.instance_lock = InstanceLock(settings.data_dir / "api.lock")
         self.lock = threading.RLock()
         self.training_lock = threading.Lock()
@@ -61,6 +61,7 @@ class Engine:
             registry=self.registry,
         )
         try:
+            settings.ensure_token()
             self.store = Store(settings.data_dir / "mlops.sqlite3")
             self.state = self.store.state() or {
                 "active_version": None,

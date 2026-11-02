@@ -4,9 +4,9 @@
 
 - 日期：2026-11-02（北京时间）；Python 3.11.9，Windows 本机 CPU 运行。
 - API 与控制器以两个独立 Python 进程运行；HTTP 客户端不调用规则评估接口，不直接调用回滚接口。
-- 自动化测试：**41 项通过，0 失败，0 错误**。pytest 原始 XML 位于本机 `runtime/test-results.xml`；公开汇总见 [summary.json](../reports/validation/summary.json)。
+- 自动化测试：**44 项通过，0 失败，0 错误**。pytest 原始 XML 位于本机 `runtime/test-results.xml`；公开汇总见 [summary.json](../reports/validation/summary.json)。
 - 浏览器控制台：实际点击“一键运行完整闭环”，观察到“闭环验证通过”，并核对服务端实验记录。
-- 本机没有安装 Docker，因此本机不宣称执行过容器运行；容器构建/编排/监控组件验收以 [Actions](https://github.com/csar1314/mlops-deployment-monitoring-rollback/actions) 的实际结果为准。
+- 本机未安装 Docker；完整容器构建、四服务编排、三类 HTTP 演练、Prometheus 采集和 Grafana 健康检查已在 [GitHub Actions](https://github.com/csar1314/mlops-deployment-monitoring-rollback/actions/runs/41382638894) 通过。容器原始实验报告见 [reports/ci](../reports/ci)。
 
 ## 三类真实 HTTP 演练
 
@@ -30,7 +30,8 @@
 6. 重启恢复、OS 单实例锁、标签不可覆盖、健康晋升条件。
 7. 管理鉴权、非法/非有限输入返回合法 422、健康探针不污染预测指标、Prometheus 指标导出。
 8. 演练报告不能提前通过、取消恢复规则、浏览器离开后超时清理、伪造实验 ID 不更改部署。
-9. Docker 组件与挂载路径、Grafana JSON、Prometheus 规则配置的静态验证。
+9. 空令牌文件自动生成有效随机凭据，拒绝重复实例时不改变正在运行服务的令牌；CLI 真实启动及内置控制器验证通过。
+10. Docker 组件与挂载路径、Grafana JSON、Prometheus 规则配置的静态验证。
 
 ## 可复现命令
 

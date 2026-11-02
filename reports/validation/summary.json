@@ -3,11 +3,11 @@
   "platform": "Windows-10-10.0.19045-SP0",
   "python": "3.11.9",
   "tests": {
-    "tests": "41",
+    "tests": "44",
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "13.772"
+    "time": "14.066"
   },
   "http_scenarios": [
     {
@@ -40,5 +40,15 @@
   ],
   "browser_demo": "passed",
   "docker_local": "not installed; validate via GitHub Actions",
-  "independent_controller_process": true
+  "independent_controller_process": true,
+  "cli_startup_smoke": "passed: ready v1 and builtin controller healthy",
+  "ci_validation": {
+    "url": "https://github.com/csar1314/mlops-deployment-monitoring-rollback/actions/runs/41382638894",
+    "conclusion": "success",
+    "windows_tests": "success",
+    "linux_tests": "success",
+    "docker_build_and_full_stack": "success",
+    "docker_http_scenarios": "success",
+    "prometheus_and_grafana_health": "success"
+  }
 }

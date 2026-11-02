@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import threading
 import time
@@ -22,7 +23,7 @@ def main():
     settings = Settings.from_env()
     if args.demo:
         settings.demo_enabled = True
-    token = settings.ensure_token()
+    app = create_app(settings)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     url = f"http://127.0.0.1:{args.port}"
     print(f"Dashboard: {url}\nAdmin token file: {settings.data_dir / 'admin-token.txt'}", flush=True)
@@ -30,17 +31,26 @@ def main():
 
         def open_when_ready():
             for _ in range(90):
+                engine = getattr(app.state, "engine", None)
+                if engine is None:
+                    time.sleep(1)
+                    continue
                 try:
                     with urllib.request.urlopen(url + "/health/ready", timeout=1) as response:
-                        if response.status == 200:
+                        ready = json.load(response)
+                        if (
+                            response.status == 200
+                            and ready.get("deployment_id") == engine.state["deployment_id"]
+                        ):
                             # URL fragment is never sent to the server or its access log.
-                            webbrowser.open(url + "/#token=" + token)
+                            webbrowser.open(url + "/#token=" + settings.token)
                             return
                 except (urllib.error.URLError, TimeoutError):
-                    time.sleep(1)
+                    pass
+                time.sleep(1)
 
         threading.Thread(target=open_when_ready, daemon=True).start()
-    uvicorn.run(create_app(settings), host=args.host, port=args.port, workers=1, access_log=True)
+    uvicorn.run(app, host=args.host, port=args.port, workers=1, access_log=True)
 
 
 if __name__ == "__main__":

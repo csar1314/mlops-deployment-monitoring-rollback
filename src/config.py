@@ -43,8 +43,10 @@ class Settings:
         self.data_dir.mkdir(parents=True, exist_ok=True)
         token_file = self.data_dir / "admin-token.txt"
         if not self.token:
-            self.token = token_file.read_text().strip() if token_file.exists() else secrets.token_urlsafe(32)
-        token_file.write_text(self.token, encoding="utf-8")
+            existing = token_file.read_text().strip() if token_file.exists() else ""
+            self.token = existing or secrets.token_urlsafe(32)
+        if not token_file.exists() or token_file.read_text() != self.token:
+            token_file.write_text(self.token, encoding="utf-8")
         try:
             token_file.chmod(0o600)
         except OSError:
