@@ -1,85 +1,118 @@
 # 基于MLOps的机器学习模型部署、监控与自动回滚系统
 
-学校工程实践项目：围绕机器学习模型从上线到运行维护的流程，设计并实现模型版本管理、服务部署、运行监控、异常告警与自动回滚的闭环。
+[![Validate MLOps system](https://github.com/csar1314/mlops-deployment-monitoring-rollback/actions/workflows/ci.yml/badge.svg)](https://github.com/csar1314/mlops-deployment-monitoring-rollback/actions/workflows/ci.yml)
 
-**当前状态：项目初始化。** 本仓库已建立需求、架构和阶段计划，业务代码、部署配置与实验结果尚待实现。下文描述的是计划目标，不代表已经完成的功能。
+学校工程实践项目。已实现从模型训练、版本登记、受控发布，到运行监控、异常判定、自动回滚、恢复验证和审计报告的单机完整闭环。
 
-## 项目目标
+> 定位：可运行、可复现、可答辩的工程实践系统。采用 Iris 多分类任务验证运维机制；真实标签来自公开测试集，不代表真实生产流量或生产级模型质量保证。
 
-- 统一记录模型版本、训练指标、模型文件和发布记录，保证版本可追溯。
-- 将模型封装为可调用的预测服务，支持健康检查与版本查询。
-- 监控服务可用性、错误率、请求延迟及模型效果相关指标。
-- 发现持续异常后，按照可配置规则切换到经过验证的稳定版本。
-- 记录告警、发布与回滚事件，支持故障复盘与实验评估。
+![中文闭环演练控制台](docs/images/dashboard-demo.png)
 
-## 计划演示场景
+## 立即运行
 
-以一个小型监督学习任务为示例，准备稳定模型 V1 和用于故障演示的候选模型 V2。发布 V2 后，通过受控方式注入延迟或服务错误，观察监控指标变化；系统满足触发条件后恢复 V1，并记录回滚过程。另设模型效果下降实验，仅在获得真实标签且满足最小样本量时评估效果。
+需要 **Python 3.11（64 位）**。不依赖 GPU，也不需要先安装 PyTorch。
 
-## 系统流程
+**Windows：双击仓库根目录 `start.cmd`。** 首次使用时创建独立环境并安装固定依赖，随后自动打开中文控制台。
 
-```mermaid
-flowchart LR
-    A[模型训练与评估] --> B[模型版本登记]
-    B --> C[发布与部署]
-    C --> D[预测服务]
-    D --> E[指标采集与监控]
-    E --> F{持续异常且满足规则?}
-    F -->|否| D
-    F -->|是| G[确认稳定版本与回滚条件]
-    G --> H[执行回滚]
-    H --> I[健康验证与事件记录]
-    I --> D
-```
-
-## 模块规划
-
-| 模块 | 计划职责 |
-| --- | --- |
-| 模型管理 | 模型登记、版本查询、评估结果与文件校验信息管理 |
-| 预测服务 | 模型加载、预测接口、健康检查、当前版本查询 |
-| 发布控制 | 发布前校验、版本切换、发布记录与人工回滚 |
-| 监控告警 | 请求量、错误率、延迟、健康状态与告警记录 |
-| 自动回滚 | 规则评估、并发保护、冷却期、稳定版本恢复与验证 |
-| 实验评估 | 故障注入、回滚耗时统计、误触发与恢复效果分析 |
-
-初步技术方案：Python、FastAPI、scikit-learn、MLflow、Prometheus、Grafana、Docker Compose 和 GitHub Actions。具体版本与依赖将在首个可运行版本中固定；第一阶段采用单机部署，降低演示与复现成本。
-
-## 仓库结构
-
-```text
-.
-├── README.md                 # 项目入口与状态说明
-├── docs/
-│   ├── requirements.md       # 需求与验收标准
-│   ├── architecture.md       # 架构与回滚机制设计
-│   └── project-plan.md       # 阶段任务与交付物
-├── src/                      # 后续业务代码
-├── tests/                    # 后续测试与故障演练代码
-├── deploy/                   # 后续部署配置
-├── monitoring/               # 后续监控与告警配置
-├── models/                   # 本地模型目录（模型文件默认不入库）
-└── data/                     # 本地数据目录（数据文件默认不入库）
-```
-
-## 阶段计划
-
-- [x] 建立仓库、项目说明、需求与架构文档
-- [ ] 训练示例模型，建立版本记录
-- [ ] 实现预测服务与容器化部署
-- [ ] 接入运行指标、监控面板与告警
-- [ ] 实现人工回滚与自动回滚控制器
-- [ ] 完成故障演练、验证报告与演示材料
-
-具体安排见 [项目计划](docs/project-plan.md)，验收条件见 [需求说明](docs/requirements.md)。
-
-## 开发与复现
+跨平台命令：
 
 ```bash
 git clone https://github.com/csar1314/mlops-deployment-monitoring-rollback.git
 cd mlops-deployment-monitoring-rollback
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Linux / macOS: source .venv/bin/activate
+python -m pip install -r requirements-lock.txt
+python -m src --demo --open-browser
 ```
 
-当前只有项目初始化文档与目录占位文件，尚无可启动服务。实现代码提交后，将补充依赖安装、环境变量、启动、测试和演示命令。
+- 控制台：<http://127.0.0.1:8765>
+- API 文档：<http://127.0.0.1:8765/docs>
+- 监控指标：<http://127.0.0.1:8765/metrics>
+- 管理令牌：本地 `runtime/admin-token.txt`。一键启动通过 URL fragment 交给当前浏览器标签页，不写入 HTTP 请求 URL 或服务器访问日志。
+- 首次启动自动训练并登记 v1 / v2，校验后发布 v1 为稳定基线。以后启动恢复持久化状态，不覆盖旧版本。
 
-不要提交密码、访问令牌、个人隐私数据、虚拟环境或大体积模型文件。模型与数据采用本地目录或专用存储管理，并在后续文档中补充可复现的获取方式。
+## 一键观察闭环
+
+进入“闭环演练”，选择一种场景并点击“一键运行完整闭环”：
+
+1. 验证稳定基线 v1，发送带标签的正常 HTTP 预测请求。
+2. 发布正常的候选模型 v2；稳定版本指针仍保留为 v1。
+3. 受控注入服务错误、额外延迟或错误预测类别，持续发送实际请求。
+4. 独立定时控制器根据窗口指标、样本量、连续异常次数与持续时间判断是否回滚。
+5. 校验并加载 v1，原子切换服务，检查实际服务指针与样例预测。
+6. 再次发送带标签请求，确认服务恢复与预测效果，保存实验报告与事件序列。
+
+演练临时采用演示规则，结束/取消后恢复原规则；会明确将 v1 重新设为演示稳定基线。请保持页面打开，超过 120 秒未完成的演练由控制器自动清理。
+
+```mermaid
+flowchart LR
+    A[训练与独立测试集评估] --> B[模型注册 / SHA-256]
+    B --> C[预检与受控发布]
+    C --> D[真实预测与标签回传]
+    D --> E[按部署批次统计窗口指标]
+    E --> F{足够样本且持续异常?}
+    F -->|是| G[校验稳定版本并回滚]
+    F -->|否| D
+    G --> H[服务指针与预测验证]
+    H --> I[恢复请求 / 实验报告 / 审计]
+    I --> D
+```
+
+## 已实现能力
+
+| 能力 | 实现 |
+| --- | --- |
+| 模型生命周期 | Logistic Regression / Random Forest 训练、固定划分、准确率/F1/混淆矩阵、不可覆盖版本、文件哈希与依赖版本校验 |
+| 发布控制 | 离线准确率门槛 0.85、模型加载与输入输出预检、原子指针切换、持久化发布记录 |
+| 在线监控 | 预测请求数、错误率、P95 延迟、带真实标签准确率、控制器心跳、Prometheus 指标与 Grafana 配置 |
+| 回滚规则 | 按当前部署隔离窗口、最小请求/标签数、持续异常、重复快照保护、冷却期 |
+| 故障处理 | 自动/人工回滚、失败保留原版本并停止自动重试、紧急人工恢复、启动时校验与稳定版本恢复 |
+| 闭环证据 | 浏览器/CLI 真实 HTTP 演练、服务端报告、逐步事件、恢复后带标签预测验证 |
+| 工程配套 | 管理接口鉴权、单实例 OS 锁、Windows 一键启动、Docker Compose、CI、自动化测试与中文文档 |
+
+核心采用 **FastAPI + scikit-learn + SQLite 模型注册库 + Prometheus/Grafana**。早期候选方案中的 MLflow 已由内置注册库替代，以减少本机部署依赖；未声称集成 MLflow。
+
+## 验证与报告
+
+```bash
+python -m pytest -q --junitxml=runtime/test-results.xml
+python -m ruff check src scripts tests
+# 保持服务与控制器运行，真实 HTTP 客户端不直接触发规则评估：
+python scripts/demo.py --kind all
+```
+
+本地验证结果见 [测试与实验报告](docs/test-report.md)，原始记录见 [reports/validation](reports/validation)。CI 覆盖 Windows/Linux 测试，以及容器构建、完整编排、三类 HTTP 演练和监控组件健康检查；以仓库 Actions 实际结果为准。
+
+## Docker 部署
+
+```bash
+python scripts/make_env.py
+docker compose --env-file .env -f deploy/compose.yml up --build --detach --wait
+```
+
+访问控制台 8765、Prometheus 9090、Grafana 3000，均只映射本机地址。管理令牌与 Grafana 初始密码位于刚生成的 `.env`，不要提交。Grafana 用户名为 `admin`，面板自动导入。详见 [运行手册](docs/runbook.md)。
+
+## 项目导航
+
+- [需求与验收映射](docs/requirements.md)
+- [架构与回滚状态机](docs/architecture.md)
+- [部署、接口、排障与人工恢复](docs/runbook.md)
+- [测试与真实实验报告](docs/test-report.md)
+- [工程实践报告与答辩演示](docs/project-report.md)
+- [交付清单与阶段完成情况](docs/project-plan.md)
+
+```text
+src/                 API、持久化、模型训练、回滚引擎、独立控制器、中文控制台
+scripts/             真实 HTTP 演练、随机环境配置生成
+tests/               核心规则、故障路径、API 与部署配置测试
+deploy/              Dockerfile 与 Compose
+monitoring/          Prometheus 规则、Grafana 数据源与面板
+docs/                设计、手册、测试报告、答辩材料
+reports/validation/  本机实测证据（不含密钥）
+runtime/             本机生成的模型、SQLite、私有令牌和报告；不入库
+```
+
+## 实现边界
+
+首版仅支持**一个 API 进程/worker + 一个共享本地状态目录**，有 OS 文件锁阻止多实例状态分叉。回滚是同一进程内的模型指针切换，不是 Kubernetes/多副本流量切换。API 整体退出、机器宕机或磁盘损坏时，需依赖进程/容器重启和外部运维处理。故障演练只影响预测路径。外网生产使用前还需 TLS、用户权限体系、外部可用性恢复、备份与多实例方案。

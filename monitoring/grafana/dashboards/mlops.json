@@ -1,0 +1,20 @@
+{
+  "uid": "mlops-practice",
+  "title": "MLOps 模型部署与自动回滚",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "refresh": "5s",
+  "time": {"from": "now-15m", "to": "now"},
+  "tags": ["mlops", "engineering-practice"],
+  "panels": [
+    {"id": 1, "title": "当前部署窗口请求数", "type": "stat", "gridPos": {"x": 0, "y": 0, "w": 6, "h": 5}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"refId": "A", "expr": "mlops_window_samples"}], "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}, "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}},
+    {"id": 2, "title": "当前窗口错误率", "type": "stat", "gridPos": {"x": 6, "y": 0, "w": 6, "h": 5}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"refId": "A", "expr": "mlops_window_error_rate"}], "fieldConfig": {"defaults": {"unit": "percentunit", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 0.25}]}}, "overrides": []}, "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value"}},
+    {"id": 3, "title": "当前窗口 P95 延迟", "type": "stat", "gridPos": {"x": 12, "y": 0, "w": 6, "h": 5}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"refId": "A", "expr": "mlops_window_p95_seconds * 1000"}], "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []}, "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}},
+    {"id": 4, "title": "带标签预测准确率（样本足够时）", "type": "stat", "gridPos": {"x": 18, "y": 0, "w": 6, "h": 5}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"refId": "A", "expr": "mlops_window_labeled_accuracy"}], "fieldConfig": {"defaults": {"unit": "percentunit", "noValue": "标签不足"}, "overrides": []}, "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}},
+    {"id": 5, "title": "预测请求速率", "type": "timeseries", "gridPos": {"x": 0, "y": 5, "w": 12, "h": 8}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"refId": "A", "expr": "sum by (result) (rate(mlops_predictions_total[2m]))", "legendFormat": "{{result}}"}], "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []}},
+    {"id": 6, "title": "分版本 P95 延迟（直方图估计）", "type": "timeseries", "gridPos": {"x": 12, "y": 5, "w": 12, "h": 8}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"refId": "A", "expr": "histogram_quantile(0.95, sum by (le, version) (rate(mlops_prediction_duration_seconds_bucket[2m]))) * 1000", "legendFormat": "{{version}}"}], "fieldConfig": {"defaults": {"unit": "ms"}, "overrides": []}},
+    {"id": 7, "title": "本进程回滚次数", "type": "timeseries", "gridPos": {"x": 0, "y": 13, "w": 12, "h": 7}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"refId": "A", "expr": "sum by (result) (mlops_rollbacks_total)", "legendFormat": "{{result}}"}], "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []}},
+    {"id": 8, "title": "距控制器上次成功评估的时间", "type": "timeseries", "gridPos": {"x": 12, "y": 13, "w": 12, "h": 7}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"refId": "A", "expr": "time() - mlops_controller_last_evaluation_timestamp", "legendFormat": "controller age"}], "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []}}
+  ]
+}

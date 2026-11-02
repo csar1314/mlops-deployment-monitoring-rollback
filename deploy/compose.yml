@@ -1,0 +1,62 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: mlops-practice:1.0.0
+    environment:
+      MLOPS_ADMIN_TOKEN: ${MLOPS_ADMIN_TOKEN:?Run python scripts/make_env.py first}
+      MLOPS_ENABLE_DEMO: ${MLOPS_ENABLE_DEMO:-1}
+      MLOPS_CONTROLLER: "0"
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - model-state:/app/runtime
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health/ready',timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+  controller:
+    image: mlops-practice:1.0.0
+    command: ["python", "-m", "src.controller"]
+    environment:
+      MLOPS_ADMIN_TOKEN: ${MLOPS_ADMIN_TOKEN:?Run python scripts/make_env.py first}
+      MLOPS_API_URL: http://api:8765
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+  prometheus:
+    image: prom/prometheus:v3.3.0
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-state:/prometheus
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d"]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:11.6.1
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Run python scripts/make_env.py first}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-state:/var/lib/grafana
+    depends_on: [prometheus]
+    restart: unless-stopped
+volumes:
+  model-state:
+  prometheus-state:
+  grafana-state:

@@ -1,0 +1,211 @@
+{
+  "id": "c8cf0b4300e94d16bc27062063fd38cf",
+  "status": "passed",
+  "started_at": 1793588665.8915975,
+  "fault_kind": "accuracy",
+  "original_policy": {
+    "window_seconds": 30,
+    "min_requests": 12,
+    "min_labels": 12,
+    "error_rate_threshold": 0.25,
+    "p95_ms_threshold": 180,
+    "accuracy_floor": 0.8,
+    "consecutive_breaches": 3,
+    "min_breach_seconds": 2,
+    "cooldown_seconds": 8,
+    "promotion_min_requests": 20
+  },
+  "candidate_deployment_id": "26920d6f13bc48de8cdadc539bafcee2",
+  "candidate_version": "v2",
+  "fault_at": 1793588667.8555908,
+  "finished_at": 1793588670.8835595,
+  "recovery_seconds": 2.792,
+  "rollback_duration_ms": 12.658,
+  "candidate_requests": 28,
+  "candidate_errors": 0,
+  "candidate_accuracy": 0.35714285714285715,
+  "candidate_p95_ms": 10.938320012064649,
+  "recovered_version": "v1",
+  "recovery_window": {
+    "deployment_id": "6cbd3a692349494bb463c84f1c46a94e",
+    "version": "v1",
+    "count": 11,
+    "errors": 0,
+    "error_rate": 0.0,
+    "p95_ms": 8.427700013271533,
+    "labeled_count": 11,
+    "accuracy": 0.8181818181818182,
+    "last_seq": 156
+  },
+  "event_sequence": [
+    {
+      "seq": 27,
+      "timestamp": 1793588665.8915975,
+      "kind": "demo_baseline_started",
+      "level": "info",
+      "payload": {
+        "operation_id": "165294506c6142b79adbab42349ca185",
+        "from_version": "v1",
+        "to_version": "v1",
+        "source_deployment_id": "2fd3025510a540198c4ccecdc46a93bd",
+        "deployment_id": "5a34b84354354ab380d52ac6cb12d7b4",
+        "reason": "管理员启动隔离演练：恢复演示基线"
+      }
+    },
+    {
+      "seq": 28,
+      "timestamp": 1793588665.9069257,
+      "kind": "demo_baseline_succeeded",
+      "level": "info",
+      "payload": {
+        "operation_id": "165294506c6142b79adbab42349ca185",
+        "from_version": "v1",
+        "to_version": "v1",
+        "source_deployment_id": "2fd3025510a540198c4ccecdc46a93bd",
+        "deployment_id": "5a34b84354354ab380d52ac6cb12d7b4",
+        "reason": "管理员启动隔离演练：恢复演示基线",
+        "duration_ms": 14.237,
+        "verified": true,
+        "timestamp": 1793588665.905924,
+        "action": "demo_baseline"
+      }
+    },
+    {
+      "seq": 29,
+      "timestamp": 1793588665.9162436,
+      "kind": "demo_started",
+      "level": "info",
+      "payload": {
+        "experiment_id": "c8cf0b4300e94d16bc27062063fd38cf",
+        "kind": "accuracy",
+        "temporary_policy": {
+          "window_seconds": 30,
+          "min_requests": 12,
+          "min_labels": 12,
+          "error_rate_threshold": 0.25,
+          "p95_ms_threshold": 180,
+          "accuracy_floor": 0.8,
+          "consecutive_breaches": 3,
+          "min_breach_seconds": 2,
+          "cooldown_seconds": 8,
+          "promotion_min_requests": 20
+        }
+      }
+    },
+    {
+      "seq": 30,
+      "timestamp": 1793588666.9987452,
+      "kind": "deployment_started",
+      "level": "info",
+      "payload": {
+        "operation_id": "961e36fd2e0d47e0af0da1cf8cea1b4e",
+        "from_version": "v1",
+        "to_version": "v2",
+        "source_deployment_id": "5a34b84354354ab380d52ac6cb12d7b4",
+        "deployment_id": "26920d6f13bc48de8cdadc539bafcee2",
+        "reason": "管理员发布候选版本"
+      }
+    },
+    {
+      "seq": 31,
+      "timestamp": 1793588667.0427434,
+      "kind": "deployment_succeeded",
+      "level": "info",
+      "payload": {
+        "operation_id": "961e36fd2e0d47e0af0da1cf8cea1b4e",
+        "from_version": "v1",
+        "to_version": "v2",
+        "source_deployment_id": "5a34b84354354ab380d52ac6cb12d7b4",
+        "deployment_id": "26920d6f13bc48de8cdadc539bafcee2",
+        "reason": "管理员发布候选版本",
+        "duration_ms": 42.752,
+        "verified": true,
+        "timestamp": 1793588667.0417428,
+        "action": "deployment"
+      }
+    },
+    {
+      "seq": 32,
+      "timestamp": 1793588667.8635893,
+      "kind": "fault_configured",
+      "level": "info",
+      "payload": {
+        "fault": {
+          "kind": "accuracy",
+          "version": "v2",
+          "expires_at": 1793588727.8555908,
+          "delay_ms": 350
+        },
+        "experiment_id": "c8cf0b4300e94d16bc27062063fd38cf"
+      }
+    },
+    {
+      "seq": 33,
+      "timestamp": 1793588670.6265624,
+      "kind": "alert_triggered",
+      "level": "warning",
+      "payload": {
+        "window": {
+          "deployment_id": "26920d6f13bc48de8cdadc539bafcee2",
+          "version": "v2",
+          "count": 28,
+          "errors": 0,
+          "error_rate": 0.0,
+          "p95_ms": 10.938320012064649,
+          "labeled_count": 28,
+          "accuracy": 0.35714285714285715,
+          "last_seq": 145
+        },
+        "reasons": [
+          "带标签预测准确率低于阈值"
+        ],
+        "breach_count": 3
+      }
+    },
+    {
+      "seq": 34,
+      "timestamp": 1793588670.634562,
+      "kind": "rollback_started",
+      "level": "info",
+      "payload": {
+        "operation_id": "2f9c963f99f74fbfa7779410cd3e3e51",
+        "from_version": "v2",
+        "to_version": "v1",
+        "source_deployment_id": "26920d6f13bc48de8cdadc539bafcee2",
+        "deployment_id": "6cbd3a692349494bb463c84f1c46a94e",
+        "reason": "自动回滚：带标签预测准确率低于阈值"
+      }
+    },
+    {
+      "seq": 35,
+      "timestamp": 1793588670.647562,
+      "kind": "rollback_succeeded",
+      "level": "info",
+      "payload": {
+        "operation_id": "2f9c963f99f74fbfa7779410cd3e3e51",
+        "from_version": "v2",
+        "to_version": "v1",
+        "source_deployment_id": "26920d6f13bc48de8cdadc539bafcee2",
+        "deployment_id": "6cbd3a692349494bb463c84f1c46a94e",
+        "reason": "自动回滚：带标签预测准确率低于阈值",
+        "duration_ms": 12.658,
+        "verified": true,
+        "timestamp": 1793588670.6455593,
+        "action": "rollback"
+      }
+    }
+  ],
+  "checks": {
+    "auto_rollback_once": true,
+    "stable_version_restored": true,
+    "serving_verified": true,
+    "recovery_requests_passed": true,
+    "recovery_labeled_accuracy": true
+  },
+  "client_validation": {
+    "transport": "HTTP",
+    "predictions_sent": 54,
+    "elapsed_seconds": 5.042,
+    "controller_evaluation_called_by_client": false
+  }
+}

@@ -1,0 +1,54 @@
+name: Validate MLOps system
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements-lock.txt
+      - run: python -m ruff check src scripts tests
+      - run: python -m pytest -q --junitxml=runtime/test-results.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}
+          path: runtime/test-results.xml
+  docker-config:
+    runs-on: ubuntu-latest
+    env:
+      MLOPS_ADMIN_TOKEN: ci-validation-only
+      GRAFANA_ADMIN_PASSWORD: ci-validation-only
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f deploy/compose.yml config --quiet
+      - run: docker compose -f deploy/compose.yml build api
+      - run: docker compose -f deploy/compose.yml up --detach --wait --wait-timeout 180
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install httpx==0.28.1
+      - name: Exercise all recovery scenarios over HTTP
+        run: |
+          printf '%s' "$MLOPS_ADMIN_TOKEN" > /tmp/mlops-token
+          python scripts/demo.py --kind all --token-file /tmp/mlops-token --output reports/ci
+      - name: Verify Prometheus scrape and Grafana health
+        run: |
+          python -c "import httpx; r=httpx.get('http://127.0.0.1:9090/api/v1/targets').json(); assert r['data']['activeTargets'] and all(t['health']=='up' for t in r['data']['activeTargets']); assert httpx.get('http://127.0.0.1:3000/api/health').json()['database']=='ok'"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: docker-http-experiments
+          path: reports/ci
+      - run: docker compose -f deploy/compose.yml down
+        if: always()

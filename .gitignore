@@ -38,3 +38,9 @@ reports/generated/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local service state and private admin token
+/runtime/
+/dist/
+/build/
+*.zip

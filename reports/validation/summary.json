@@ -1,0 +1,44 @@
+{
+  "validated_at": "2026-11-02T11:18:44.658986+08:00",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python": "3.11.9",
+  "tests": {
+    "tests": "41",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "13.772"
+  },
+  "http_scenarios": [
+    {
+      "fault_kind": "error",
+      "status": "passed",
+      "recovery_seconds": 3.178,
+      "rollback_duration_ms": 13.507,
+      "candidate_requests": 33,
+      "candidate_errors": 23,
+      "candidate_accuracy": 1.0
+    },
+    {
+      "fault_kind": "latency",
+      "status": "passed",
+      "recovery_seconds": 3.856,
+      "rollback_duration_ms": 12.823,
+      "candidate_requests": 18,
+      "candidate_errors": 0,
+      "candidate_accuracy": 0.9444444444444444
+    },
+    {
+      "fault_kind": "accuracy",
+      "status": "passed",
+      "recovery_seconds": 2.792,
+      "rollback_duration_ms": 12.658,
+      "candidate_requests": 28,
+      "candidate_errors": 0,
+      "candidate_accuracy": 0.35714285714285715
+    }
+  ],
+  "browser_demo": "passed",
+  "docker_local": "not installed; validate via GitHub Actions",
+  "independent_controller_process": true
+}

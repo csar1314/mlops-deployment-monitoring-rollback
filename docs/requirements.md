@@ -1,45 +1,32 @@
-# 需求与验收标准
+# 需求与验收映射
 
-本文为初始需求草案，随课程要求与实现进度更新。
+本版交付为单机模型运维系统。以下功能均有实际代码，测试结果与实测记录见 [测试报告](test-report.md)。
 
-## 功能需求
-
-| 编号 | 需求 | 验收方式 |
+| 编号 | 实现与验收 | 证据 |
 | --- | --- | --- |
-| FR-01 | 模型版本管理 | 能登记并查询至少两个版本，记录文件校验值、评估指标和登记时间 |
-| FR-02 | 模型预测服务 | 可提交合法输入并获得结果；非法输入返回明确错误，不使服务退出 |
-| FR-03 | 健康与版本查询 | 能查询进程存活、模型就绪状态及实际运行版本 |
-| FR-04 | 受控发布 | 发布前完成模型加载与样例推理检查；失败时维持原版本 |
-| FR-05 | 运行指标监控 | 展示请求量、错误率、延迟及当前模型版本；预测请求与健康探针分开计数 |
-| FR-06 | 告警规则 | 支持阈值、统计窗口、最小样本量与持续异常次数配置，记录触发原因 |
-| FR-07 | 人工回滚 | 能恢复指定的已验证版本，完成健康和预测验证后再确认成功 |
-| FR-08 | 自动回滚 | 注入持续异常后自动恢复稳定版本，完整记录判断、执行与验证过程 |
-| FR-09 | 回滚保护 | 并发触发时只执行一次切换；冷却期内避免反复切换；失败时进入人工处理状态 |
-| FR-10 | 事件追溯 | 能查看发布、异常、回滚及验证结果，关联模型版本、时间与原因 |
+| FR-01 | 训练与登记不可覆盖版本，保存评估指标和工件校验值 | `test_training_registry_and_immutable_versions` |
+| FR-02 | 四特征预测、输入校验、失败返回；预测与真实标签关联 | `test_invalid_input_is_rejected_without_polluting_predict_metrics`、`test_inference_feedback_and_prometheus_export` |
+| FR-03 | 存活、就绪、当前实际服务版本查询；探针不污染指标 | `test_dashboard_docs_and_readiness`、`test_health_checks_do_not_count_as_predictions` |
+| FR-04 | 加载、哈希、协议与推理预检；失败保留原版本 | `test_corrupt_candidate_is_rejected_and_original_kept` |
+| FR-05 | 预测窗口指标、Prometheus、控制台、Grafana 配置 | `test_inference_feedback_and_prometheus_export`、`test_grafana_dashboard_and_prometheus_rules` |
+| FR-06 | 配置阈值、最小样本量、连续评估次数与持续时间 | `test_same_requests_cannot_inflate_consecutive_breaches`、`test_minimum_duration_prevents_early_rollback` |
+| FR-07 | 具备预期部署 ID 的人工回滚、切换后验证 | `test_concurrent_duplicate_rollbacks_execute_once` |
+| FR-08 | 持续错误、延迟和带真实标签效果下降触发自动回滚 | `test_error_rate_triggers_exactly_one_verified_rollback`、`test_latency_rollback_with_real_sleep`、`test_accuracy_requires_labels_then_triggers_rollback`；三份 HTTP 演练报告 |
+| FR-09 | 冷却、幂等、工件失效、失败停止与人工恢复 | `test_cooldown_blocks_redeploy_and_auto_flapping`、`test_failed_rollback_stops_automation_until_manual_recovery`、`test_emergency_recovery_closes_failed_rollback_path` |
+| FR-10 | 版本、时间、原因、操作与部署 ID、恢复证据可追溯 | `test_full_demo_report_uses_observed_rollback`、`/api/events`、`/api/deployments`、`/api/experiments` |
 
-## 非功能需求
+## 非功能验收
 
-- 可复现：固定依赖与配置，提供从克隆仓库到演示的操作说明。
-- 可观察：使用结构化日志；关键操作有事件标识与结果记录。
-- 可验证：覆盖正常发布、模型加载失败、持续错误、短暂抖动、指标缺失和回滚失败等场景。
-- 可维护：将预测服务、指标采集与回滚控制逻辑分离，避免互相阻塞。
-- 数据保护：仓库不包含密钥、隐私数据或本地环境文件。
+- **可复现**：Python 3.11、固定依赖快照、固定随机种子、自带公开数据；无需另行下载模型或申请 API Key。
+- **可维护**：API、领域引擎、存储、训练、控制器与静态控制台分模块；跨平台 CI。
+- **可观察**：错误/延迟/效果与监控失联分开报告，无样本不等于健康；记录结构化操作事件。
+- **可恢复**：发布前后均校验；失败保留旧指针；重启恢复持久状态；紧急恢复关闭故障处理死路。
+- **操作保护**：管理令牌、同源控制台、无上传接口、OS 单实例锁、受控故障 TTL、演练超时清理；凭据与运行目录不提交。
 
-## 指标口径
+## 最终演示验收步骤
 
-- 服务错误率：统计窗口内失败的预测请求数 / 预测请求总数，明确纳入的状态码范围。
-- 推理延迟：记录预测请求的延迟分布，并在有足够请求时计算 P95。
-- 故障恢复耗时：从故障注入到稳定版本重新就绪并通过预测验证的时间。
-- 回滚执行耗时：从控制器决定回滚到验证成功的时间，与异常检测耗时分别报告。
-- 模型效果：只有存在真实标签时才计算准确率等指标；数据分布漂移作为预警信号单独报告。
-
-阈值应在基线实验后配置，并在实验报告中说明理由。未采集到指标不等于服务健康，指标缺失应作为独立状态处理。
-
-## 最终演示验收
-
-1. 启动系统并查看稳定版本 V1 的预测结果与指标。
-2. 发布候选版本 V2，查看版本与发布事件。
-3. 注入可重复的服务故障，观察指标和告警。
-4. 自动恢复到 V1，预测请求重新正常，事件记录可查。
-5. 展示短时异常不误回滚、目标版本无效不执行切换等保护场景。
-6. 提交代码、启动说明、测试结果、实验报告和演示材料。
+1. 双击 `start.cmd`，确认 v1 就绪与两个模型登记信息。
+2. 运行三种“一键完整闭环”，观察 v2 发布、真实请求、持续异常、一次自动回滚和恢复结果。
+3. 下载报告，核对候选部署 ID、回滚原因、耗时、恢复版本和带标签结果。
+4. 展示低流量不触发、无标签不判断准确率、重复告警不重复回滚、回滚失败进入人工处理等测试证据。
+5. 使用 Docker 的环境另行验证 API、独立控制器、Prometheus 与 Grafana；本机未安装 Docker 时以实际 CI 结果为容器验收依据。

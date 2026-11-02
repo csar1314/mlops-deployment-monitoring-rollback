@@ -1,0 +1,38 @@
+groups:
+  - name: mlops-practice
+    rules:
+      - alert: PredictionErrorRateHigh
+        expr: (mlops_window_error_rate >= mlops_policy_error_rate_threshold) and (mlops_window_samples >= mlops_policy_min_requests)
+        for: 2s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prediction error rate exceeds the configured policy"
+      - alert: PredictionLatencyHigh
+        expr: (mlops_window_p95_seconds > mlops_policy_p95_seconds_threshold) and (mlops_window_samples >= mlops_policy_min_requests)
+        for: 2s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prediction P95 latency exceeds the configured policy"
+      - alert: LabeledAccuracyLow
+        expr: (mlops_window_labeled_accuracy < mlops_policy_accuracy_floor) and (mlops_window_labels >= mlops_policy_min_labels) and (mlops_window_samples >= mlops_policy_min_requests)
+        for: 2s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Accuracy on labeled predictions is below the configured policy"
+      - alert: RollbackControllerStale
+        expr: time() - mlops_controller_last_evaluation_timestamp > 5
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "No recent successful rollback controller evaluation"
+      - alert: ModelServiceUnavailable
+        expr: up{job="mlops-api"} == 0
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Model API is unavailable; an external operator must recover the service"
